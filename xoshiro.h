@@ -57,6 +57,42 @@ static inline void assign_32bits_to64_right(std::uint64_t assign_to, const std::
     std::memcpy(reinterpret_cast<std::uint32_t*>(&assign_to) + 1, &take_from, sizeof(std::uint32_t));
 }
 
+constexpr static const uint64_t JUMP_X256PP[] = { 0x180ec6d33cfd0aba, 0xd5a61266f0c9392c, 0xa9582618e03fc9aa, 0x39abdc4529b1661c };
+
+constexpr static const uint64_t LONG_JUMP_X256PP[] = { 0x76e15d3efefdcbbf, 0xc5004e441c522fb3, 0x77710069854ee241, 0x39109bb02acbe635 };
+
+constexpr static const uint32_t JUMP_X128PP[] = { 0x8764000b, 0xf542d2d3, 0x6fa035c3, 0x77f2db5b };
+
+constexpr static const uint32_t LONG_JUMP_X128PP[] = { 0xb523952e, 0x0b6f099f, 0xccf5a0ef, 0x1c580662 };
+
+template <class int_t, class rng_t>
+static inline void jump_state(const int_t jump_table[4], rng_t &rng)
+{
+    int_t s0 = 0;
+    int_t s1 = 0;
+    int_t s2 = 0;
+    int_t s3 = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        for (int b = 0; b < 8*sizeof(int_t); b++)
+        {
+            if (jump_table[i] & ((int_t)1) << b)
+            {
+                s0 ^= rng.state[0];
+                s1 ^= rng.state[1];
+                s2 ^= rng.state[2];
+                s3 ^= rng.state[3];
+            }
+            rng(); 
+        }
+    }
+        
+    rng.state[0] = s0;
+    rng.state[1] = s1;
+    rng.state[2] = s2;
+    rng.state[3] = s3;
+}
+
 /* This is a fixed-increment version of Java 8's SplittableRandom generator
    See http://dx.doi.org/10.1145/2714064.2660195 and 
    http://docs.oracle.com/javase/8/docs/api/java/util/SplittableRandom.html
@@ -98,6 +134,16 @@ public:
     }
 
     Xoshiro256PP() = default;
+
+    ~Xoshiro256PP() noexcept = default;
+
+    Xoshiro256PP(Xoshiro256PP &other) = default;
+
+    Xoshiro256PP& operator=(const Xoshiro256PP &other) = default;
+
+    Xoshiro256PP(Xoshiro256PP &&) noexcept = default;
+
+    Xoshiro256PP& operator=(Xoshiro256PP &&) noexcept = default;
 
     void seed(const std::uint64_t seed)
     {
@@ -152,6 +198,20 @@ public:
     {
         for (unsigned long long ix = 0; ix < z; ix++)
             this->operator()();
+    }
+
+    Xoshiro256PP jump()
+    {
+        Xoshiro256PP new_gen = *this;
+        jump_state(JUMP_X256PP, new_gen);
+        return new_gen;
+    }
+
+    Xoshiro256PP long_jump()
+    {
+        Xoshiro256PP new_gen = *this;
+        jump_state(LONG_JUMP_X256PP, new_gen);
+        return new_gen;
     }
 
     bool operator==(const Xoshiro256PP &rhs)
@@ -221,6 +281,15 @@ public:
 
     Xoshiro128PP() = default;
 
+    ~Xoshiro128PP() noexcept = default;
+
+    Xoshiro128PP(Xoshiro128PP &other) = default;
+
+    Xoshiro128PP& operator=(const Xoshiro128PP &other) = default;
+
+    Xoshiro128PP(Xoshiro128PP &&) noexcept = default;
+
+    Xoshiro128PP& operator=(Xoshiro128PP &&) noexcept = default;
 
     void seed(const std::uint64_t seed)
     {
@@ -293,6 +362,20 @@ public:
         this->state[2] ^= t;
         this->state[3] = rotl32(this->state[3], 11);
         return result;
+    }
+
+    Xoshiro128PP jump()
+    {
+        Xoshiro128PP new_gen = *this;
+        jump_state(JUMP_X128PP, new_gen);
+        return new_gen;
+    }
+
+    Xoshiro128PP long_jump()
+    {
+        Xoshiro128PP new_gen = *this;
+        jump_state(LONG_JUMP_X128PP, new_gen);
+        return new_gen;
     }
 
     void discard(unsigned long long z)

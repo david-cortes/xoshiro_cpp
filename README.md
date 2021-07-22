@@ -2,7 +2,7 @@
 
 This is a C++ header-only wrapper for the Xoshiro256++ (64-bit) and Xhosiro128++ (32-bit) PRNG (pseudo-random number generators) from https://prng.di.unimi.it, which turns them into classes to be used as drop-in replacements for for C++'s standard random engines in the functions and classes from the `<random>` header.
 
-Has a small change in the seeding logic in order to make them thread-safe.
+_Note: it has a small change in the seeding logic compared to the original code._
 
 # Why change the random engine
 
@@ -20,11 +20,12 @@ To use this code, just copy the header file and include it (might require C++11 
 
 ```cpp
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <vector>
 #include <random>
 #include <algorithm>
-#include "xoshiro.hpp"
+#include "xoshiro.h"
 
 int main()
 {
@@ -71,6 +72,19 @@ int main()
         std::cout << rng2() << " ";
     std::cout << "]" << std::endl;
     std::cout << "(should be the same as before)" << std::endl;
+
+    /* Could also use the jumping functionality for parallel streams */
+    Xoshiro::Xoshiro256PP rng_next = rng.jump();
+    std::cout << std::setprecision(4) << std::fixed;
+    std::uniform_real_distribution<double> runif(0, 1);
+    std::cout << "\n(Jumping states)";
+    std::cout << "\nNext random numbers (original): ";
+    for (int ix = 0; ix < 5; ix++)
+        std::cout << runif(rng) << " ";
+    std::cout << "\nNext random numbers (parallel): ";
+    for (int ix = 0; ix < 5; ix++)
+        std::cout << runif(rng_next) << " ";
+    std::cout << std::endl;
     return 0;
 }
 ```
