@@ -123,12 +123,12 @@ public:
     using result_type = std::uint64_t;
     std::uint64_t state[4] = {0x3d23dce41c588f8c, 0x10c770bb8da027b0, 0xc7a4c5e87c63ba25, 0xa830f83239465a2e};
 
-    constexpr result_type min() const
+    constexpr static result_type min()
     {
         return 0;
     }
 
-    constexpr result_type max() const
+    constexpr static result_type max()
     {
         return UINT64_MAX;
     }
@@ -269,12 +269,12 @@ public:
     using result_type = std::uint32_t;
     std::uint32_t state[4] = {0x1c588f8c, 0x3d23dce4, 0x8da027b0, 0x10c770bb};
 
-    constexpr result_type min() const
+    constexpr static result_type min()
     {
         return 0;
     }
 
-    constexpr result_type max() const
+    constexpr static result_type max()
     {
         return UINT32_MAX;
     }
