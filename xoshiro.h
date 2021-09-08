@@ -12,7 +12,6 @@ See <http://creativecommons.org/publicdomain/zero/1.0/>. */
 #ifndef XOSHIRO_H
 #define XOSHIRO_H
 
-#include <random>
 #include <iostream>
 #include <cstring>
 #include <cstdint>
